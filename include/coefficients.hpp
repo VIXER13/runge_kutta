@@ -17,6 +17,7 @@ class runge_kutta4 {
     using t = triplet<T>;
 
 public:
+    static constexpr uintmax_t order = 4;
     static constexpr size_t stages = 4;
     static constexpr bool nested = false;
     static constexpr std::array<triplet<T>, 3> aij = {
@@ -27,7 +28,7 @@ public:
     static constexpr std::array<triplet<T>, 4> bj = {
         t{0, 0, T{1}/T{6}}, t{0, 1, T{1}/T{3}}, t{0, 2, T{1}/T{3}}, t{0, 3, T{1}/T{6}}
     };
-    static constexpr std::array<T, 4> ci = {T{0}, T{1}/T{2}, T{1}/T{2}, T{1}};
+    static constexpr std::array<T, stages> ci = {T{0}, T{1}/T{2}, T{1}/T{2}, T{1}};
 };
 
 template<class T>
@@ -36,6 +37,7 @@ class dormand_prince {
     using t = triplet<T>;
 
 public:
+    static constexpr uintmax_t order = 5;
     static constexpr size_t stages = 7;
     static constexpr bool nested = true;
     static constexpr std::array<triplet<T>, 20> aij = {
@@ -50,7 +52,7 @@ public:
         t{0, 0, T{  35}/T{  384}},                             t{0, 2, T{ 500}/T{ 1113}}, t{0, 3, T{ 125}/T{192}}, t{0, 4, T{ -2187}/T{  6784}}, t{0, 5, T{ 11}/T{  84}},
         t{1, 0, T{5179}/T{57600}},                             t{1, 2, T{7571}/T{16695}}, t{1, 3, T{ 393}/T{640}}, t{1, 4, T{-92097}/T{339200}}, t{1, 5, T{187}/T{2100}}, t{1, 6, T{1}/T{40}}
     };
-    static constexpr std::array<T, 7> ci = {T{0}, T{1}/T{5}, T{3}/T{10}, T{4}/T{5}, T{8}/T{9}, T{1}, T{1}};
+    static constexpr std::array<T, stages> ci = {T{0}, T{1}/T{5}, T{3}/T{10}, T{4}/T{5}, T{8}/T{9}, T{1}, T{1}};
 };
 
 }

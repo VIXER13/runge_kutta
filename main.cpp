@@ -27,7 +27,7 @@ int main() {
 
     ode::runge_kutta_parameters<double> parameters;
     parameters.tau_init = 0.1;
-    parameters.tol = 1e-9;
+    parameters.tol = 1e-3;
     parameters.time_interval = {t0, t0 + 4};
     const std::array<double, 2> init = {std::exp(std::sin(t0 * t0)), std::exp(std::cos(t0 * t0))};
     static constexpr auto system = [](const double t, const std::array<double, 2>& x) {
