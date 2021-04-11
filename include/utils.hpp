@@ -2,6 +2,8 @@
 #define RUNGE_KUTTA_UTILS_HPP
 
 #include <cstddef>
+#include <tuple>
+#include <cmath>
 #include <utility>
 
 namespace utils {
