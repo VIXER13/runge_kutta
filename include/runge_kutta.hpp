@@ -11,14 +11,14 @@ namespace ode {
 
 template<class T>
 struct runge_kutta_parameters {
-    T tau_min  = 0,                                // Минимальный размер шага
-      tau_init = T{1} / T{10},                     // Начальный размер шага
-      tau_max  = std::numeric_limits<T>::max(),    // Максимальный размер шага
-      tol      = T{1} / T{1000},                   // Точность
-      tol_min  = T{1} / T{1000000},
-      fact_min = T{1} / T{2},                      // Минимальный фактор
-      fact     = T{1},                             // Гарантийный фактор
-      fact_max = T{2};                             // Максимальный фактор
+    T tau_min   = 0,                               // Минимальный размер шага
+      tau_init  = T{1} / T{10},                    // Начальный размер шага
+      tau_max   = std::numeric_limits<T>::max(),   // Максимальный размер шага
+      tol       = T{1} / T{1000},                  // Точность
+      tol_small = T{1} / T{1000000},               //
+      fact_min  = T{1} / T{2},                     // Минимальный фактор
+      fact      = T{1},                            // Гарантийный фактор
+      fact_max  = T{2};                            // Максимальный фактор
     std::array<T, 2> time_interval = {T{0}, T{1}}; // Интервал интегрирования
 };
 
@@ -69,7 +69,7 @@ class _runge_kutta {
 
     template<uintmax_t Order, class T>
     static T tau_factor(const runge_kutta_parameters<T>& parameters, const T err) {
-        static constexpr T power = T{1} / (Order + 1);
+        static constexpr T power = T{1} / T{Order + 1};
         return std::min(parameters.fact_max,
                std::max(parameters.fact_min,
                         parameters.fact * std::pow(parameters.tol / err, power)));
@@ -122,10 +122,14 @@ runge_kutta(const runge_kutta_parameters<T>& parameters, const Container& init, 
                 tau = parameters.tau_max;
                 step_resize = false;
             }
+            if (time.back() + tau > parameters.time_interval.back()) {
+                tau = parameters.time_interval.back() - time.back();
+                step_resize = false;
+            }
         }
         using namespace utils;
         time.push_back(time.back() + tau);
-        sol.push_back(sol.back() + tau * K[0]);
+        sol.emplace_back(sol.back() + tau * K[0]);
     }
     return {std::move(time), std::move(sol)};
 }
