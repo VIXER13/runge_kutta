@@ -5,7 +5,6 @@
 #include "utils.hpp"
 #include <vector>
 #include <numeric>
-#include <iostream>
 
 namespace ode {
 
@@ -98,13 +97,14 @@ class _runge_kutta {
 
 public:
     template<class T, template<class> class Coeffs, class Container, class System>
-    friend std::tuple<std::vector<T>, std::vector<Container>, std::vector<T>>
+    friend std::tuple<std::vector<T>, std::vector<Container>, std::vector<T>, uintmax_t>
     runge_kutta(const runge_kutta_parameters<T>& parameters, const Container& init, const System& system);
 };
 
 template<class T, template<class> class Coeffs, class Container, class System>
-std::tuple<std::vector<T>, std::vector<Container>, std::vector<T>>
+std::tuple<std::vector<T>, std::vector<Container>, std::vector<T>, uintmax_t>
 runge_kutta(const runge_kutta_parameters<T>& parameters, const Container& init, const System& system) {
+    uintmax_t defect_step = 0;
     T tau = parameters.tau_init;
     std::vector<Container> sol(1, init);
     std::vector<T> time(1, parameters.time_interval.front());
@@ -141,6 +141,8 @@ runge_kutta(const runge_kutta_parameters<T>& parameters, const Container& init, 
                 tau *= parameters.fact_min;
             }
 
+            ++defect_step;
+
             if (tau < parameters.tau_min) {
                 tau = parameters.tau_min;
                 step_resize = false;
@@ -158,7 +160,7 @@ runge_kutta(const runge_kutta_parameters<T>& parameters, const Container& init, 
         time.push_back(time.back() + tau);
         sol.emplace_back(std::move(new_sol[0]));
     }
-    return {std::move(time), std::move(sol), std::move(loc_err)};
+    return {std::move(time), std::move(sol), std::move(loc_err), defect_step};
 }
 
 }
