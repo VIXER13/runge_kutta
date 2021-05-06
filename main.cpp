@@ -2,6 +2,7 @@
 #include <string_view>
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 namespace {
 
@@ -57,10 +58,10 @@ int main() {
                     parameters.fact_min = fact_min;
                     std::cout << "\\hline" << std::endl;
                     std::cout << tau << " & " << fact << " & " << fact_max << " & " << fact_min << " & ";
-                    auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::dormand_prince>(parameters, init, system);
-                    std::cout << std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))) +
-                                 std::abs(sol.back()[1] - std::exp(std::cos(tN * tN))) << " & "
-                              << def << " & " << time.size()-1 << std::endl;
+                    auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::runge_kutta4>(parameters, init, system);
+                    std::cout << std::max(std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))),
+                                          std::abs(sol.back()[1] - std::exp(std::cos(tN * tN)))) << " & "
+                              << def << " & " << time.size()-1 << " \\\\" << std::endl;
                 }
 
     uintmax_t step = 0;
@@ -75,17 +76,35 @@ int main() {
             auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::runge_kutta4>(parameters, init, system);
             save_data("rk4"+std::to_string(step), time, sol, loc_err);
             std::cout << "rk4 steps = " << sol.size()-1 << " defect = " << def << " err = "
-                      << std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))) +
-                         std::abs(sol.back()[1] - std::exp(std::cos(tN * tN))) << std::endl;
+                      << std::max(std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))),
+                                  std::abs(sol.back()[1] - std::exp(std::cos(tN * tN)))) << std::endl;
         }
         {
             auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::dormand_prince>(parameters, init, system);
             save_data("dp"+std::to_string(step), time, sol, loc_err);
             std::cout << "dp steps = " << sol.size()-1 << " defect = " << def << " err = "
-                      << std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))) +
-                         std::abs(sol.back()[1] - std::exp(std::cos(tN * tN))) << std::endl;
+                      << std::max(std::abs(sol.back()[0] - std::exp(std::sin(tN * tN))),
+                                  std::abs(sol.back()[1] - std::exp(std::cos(tN * tN)))) << std::endl;
         }
         ++step;
     }
+
+    {
+        parameters.fact = 0.9;
+        parameters.fact_min = 0.2;
+        parameters.tau_init = 0.2;
+        parameters.tol = 1e-6;
+        parameters.tau_init = 0.5;
+        double t = omp_get_wtime();
+        for(uintmax_t i = 0; i < 1000; ++i)
+            auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::runge_kutta4>(parameters, init, system);
+        std::cout << omp_get_wtime() - t << std::endl;
+
+        t = omp_get_wtime();
+        for(uintmax_t i = 0; i < 1000; ++i)
+            auto [time, sol, loc_err, def] = ode::runge_kutta<double, ode::dormand_prince>(parameters, init, system);
+        std::cout << omp_get_wtime() - t << std::endl;
+    }
+
     return EXIT_SUCCESS;
 }

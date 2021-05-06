@@ -21,7 +21,7 @@ constexpr T power(const T x) {
 }
 
 template<class T, class Container>
-Container operator*(const T val, const Container& data) {
+Container operator*(const T& val, const Container& data) {
     Container new_data = data;
     for(size_t i = 0; i < data.size(); ++i)
         new_data[i] *= val;
@@ -40,6 +40,13 @@ template<class Container>
 Container& operator+=(Container& lhs, const Container& rhs) {
     for(size_t i = 0; i < lhs.size(); ++i)
         lhs[i] += rhs[i];
+    return lhs;
+}
+
+template<class Container, class T>
+Container& operator*=(Container& lhs, const T& val) {
+    for(auto& it : lhs)
+        it *= val;
     return lhs;
 }
 
